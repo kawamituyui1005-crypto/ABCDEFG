@@ -33,9 +33,10 @@
             <div id="player"></div>
         </div>
 
-        <!-- 残機表示 -->
+        <!-- 残機表示とスコア表示 -->
         <div id="hp-display">
             HP <span id="hp-text">♥♥♥</span>
+            <span id="score-text" style="float: right;">SCORE: 0</span>
         </div>
 
         <!-- UIボタン群 (飾り) -->
@@ -51,6 +52,14 @@
             <h1>GAME OVER</h1>
             <p>あきらめては いけない・・・</p>
             <button id="restart-btn">Try Again</button>
+        </div>
+
+        <!-- ゲームクリア画面 -->
+        <div id="game-clear" class="hidden">
+            <h1>GAME CLEAR!</h1>
+            <p>あなたは ケツイで みたされた！</p>
+            <p>FINAL SCORE: <span id="final-score">0</span></p>
+            <button id="clear-restart-btn">Try Again</button>
         </div>
     </div>
     <script src="script.js"></script>

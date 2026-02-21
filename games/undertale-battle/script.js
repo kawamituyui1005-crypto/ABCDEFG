@@ -5,6 +5,10 @@ const startScreen = document.getElementById('start-screen');
 const restartBtn = document.getElementById('restart-btn');
 const dialogText = document.getElementById('dialog-text');
 const hpText = document.getElementById('hp-text');
+const clearScreen = document.getElementById('game-clear');
+const scoreText = document.getElementById('score-text');
+const finalScoreText = document.getElementById('final-score');
+const clearRestartBtn = document.getElementById('clear-restart-btn');
 
 let isGameActive = false;
 let playerPos = { x: 125, y: 125 }; // 箱の中心に配置
@@ -13,6 +17,9 @@ let keys = {};
 let bullets = [];
 let frameId;
 let frameCount = 0;
+
+let score = 0;
+const CLEAR_SCORE = 20000;
 
 // 残機（HP）と無敵時間（Invincibility）の管理用
 let playerHP = 3;
@@ -72,6 +79,11 @@ function initEvent() {
         startScreen.classList.remove('hidden');
     });
 
+    clearRestartBtn.addEventListener('click', () => {
+        clearScreen.classList.add('hidden');
+        startScreen.classList.remove('hidden');
+    });
+
     // 難易度選択ボタンのイベント
     document.querySelectorAll('.diff-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -97,6 +109,9 @@ function startGame() {
     player.style.opacity = '1';
     player.style.left = playerPos.x + 'px';
     player.style.top = playerPos.y + 'px';
+
+    score = 0;
+    if (scoreText) scoreText.innerText = 'SCORE: 0';
 
     if (hpText) {
         hpText.innerText = '♥♥♥';
@@ -283,6 +298,15 @@ function gameLoop(time) {
     updatePlayer();
     updateBullets();
 
+    // スコア加算
+    score += 10;
+    if (scoreText) scoreText.innerText = 'SCORE: ' + score;
+
+    if (score >= CLEAR_SCORE) {
+        gameClear();
+        return;
+    }
+
     frameCount++;
     const settings = difficultySettings[currentDifficulty];
 
@@ -373,6 +397,13 @@ function gameOver() {
     isGameActive = false;
     cancelAnimationFrame(frameId);
     gameOverScreen.classList.remove('hidden');
+}
+
+function gameClear() {
+    isGameActive = false;
+    cancelAnimationFrame(frameId);
+    if (finalScoreText) finalScoreText.innerText = score;
+    clearScreen.classList.remove('hidden');
 }
 
 // 初期化（DOMロード時に実行）
