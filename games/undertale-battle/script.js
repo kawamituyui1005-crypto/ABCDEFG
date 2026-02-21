@@ -126,6 +126,11 @@ function startGame() {
     currentAttackPattern = 0;
     dialogText.innerText = "* 用心して 避けろ！";
 
+    // BGM開始
+    if (typeof startBGM === 'function') {
+        startBGM();
+    }
+
     cancelAnimationFrame(frameId);
     frameId = requestAnimationFrame(gameLoop);
 }
@@ -397,6 +402,11 @@ function gameOver() {
     isGameActive = false;
     cancelAnimationFrame(frameId);
     gameOverScreen.classList.remove('hidden');
+
+    // BGM停止
+    if (typeof stopBGM === 'function') {
+        stopBGM();
+    }
 }
 
 function gameClear() {
@@ -404,6 +414,11 @@ function gameClear() {
     cancelAnimationFrame(frameId);
     if (finalScoreText) finalScoreText.innerText = score;
     clearScreen.classList.remove('hidden');
+
+    // BGM停止
+    if (typeof stopBGM === 'function') {
+        stopBGM();
+    }
 }
 
 // 初期化（DOMロード時に実行）
