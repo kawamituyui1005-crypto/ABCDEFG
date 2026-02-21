@@ -1,0 +1,151 @@
+:root {
+    --bg-color: #050510;
+    --accent-color: #64ffda;
+    --neon-pink: #ff00ff;
+    --neon-blue: #00ffff;
+    --font-heading: 'Outfit', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: #fff;
+    font-family: var(--font-heading);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 1920px;
+    max-height: 1080px;
+    background: linear-gradient(to bottom, #1a1a2e, #16213e);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-title {
+    position: absolute;
+    top: 15%;
+    font-size: clamp(3rem, 6vw, 6rem);
+    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+    opacity: 0.8;
+    z-index: 10;
+    letter-spacing: 5px;
+    transition: opacity 0.5s;
+}
+
+.score-display {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    font-size: 2rem;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+    z-index: 100;
+}
+
+.screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(5, 5, 16, 0.9);
+    padding: 3rem;
+    border-radius: 12px;
+    border: 2px solid var(--neon-blue);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+.screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.screen p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #e0e0e0;
+}
+
+.screen h2 {
+    font-size: 3rem;
+    color: var(--neon-pink);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px var(--neon-pink);
+}
+
+.btn {
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 800;
+    padding: 1rem 3rem;
+    color: #050510;
+    background: var(--neon-blue);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+.btn:hover {
+    background: #fff;
+    box-shadow: 0 0 20px #fff;
+    transform: scale(1.05);
+}
+
+.back-link {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 1.2rem;
+    z-index: 100;
+    transition: color 0.3s;
+    pointer-events: auto;
+}
+
+.back-link:hover {
+    color: var(--accent-color);
+    text-shadow: 0 0 5px var(--accent-color);
+}

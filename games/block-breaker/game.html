@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Block Breaker | yuimaru</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <a href="../../index.html" class="back-link">← Back to Portfolio</a>
+            <h1 class="game-title">Neon Block Breaker</h1>
+        </header>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div id="startScreen" class="overlay">
+                <h2>Ready?</h2>
+                <p>Click or Press Space to Start</p>
+            </div>
+            <div id="gameOverScreen" class="overlay hidden">
+                <h2>Game Over</h2>
+                <p>Score: <span id="finalScore">0</span></p>
+                <button id="restartBtn">Try Again</button>
+            </div>
+            <div id="winScreen" class="overlay hidden">
+                <h2>You Win!</h2>
+                <p>Score: <span id="winScore">0</span></p>
+                <button id="restartBtnWin">Play Again</button>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <div class="score-board">Score: <span id="score">0</span></div>
+            <div class="lives-board">Lives: <span id="lives">3</span></div>
+        </div>
+
+        <div class="controls-hint">
+            <p>Controls: Mouse / Arrow Keys to Move</p>
+        </div>
+    </div>
+</body>
+
+</html>

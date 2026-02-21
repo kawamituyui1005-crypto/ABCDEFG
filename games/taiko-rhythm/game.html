@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taiko Rhythm | yuimaru</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Zen+Kaku+Gothic+New:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <a href="../../index.html" class="back-link">← Back</a>
+            <h1 class="game-title">TAIKO RHYTHM</h1>
+            <div class="score-display">
+                <span class="label">SCORE</span>
+                <span id="score">0</span>
+            </div>
+        </header>
+
+        <div class="game-area">
+            <div id="lane-container">
+                <div id="lane">
+                    <div id="hit-zone">
+                        <div class="hit-circle"></div>
+                    </div>
+                </div>
+
+                <!-- Soul Gauge -->
+                <div class="gauge-container">
+                    <div class="gauge-label">魂</div>
+                    <div class="gauge-track">
+                        <div class="gauge-fill" id="gauge-fill"></div>
+                        <div class="gauge-threshold-marker"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="drum-area">
+                <div class="drum-container">
+                    <div id="drum-left-ka" class="drum-part ka left"></div>
+                    <div id="drum-left-don" class="drum-part don left"></div>
+                    <div id="drum-right-don" class="drum-part don right"></div>
+                    <div id="drum-right-ka" class="drum-part ka right"></div>
+                    <div class="drum-center-text">太鼓</div>
+                </div>
+                <div class="controls-guide">
+                    <div class="key-guide"><span class="key">D</span><span>カッ</span></div>
+                    <div class="key-guide"><span class="key">F</span><span>ドン</span></div>
+                    <div class="key-guide"><span class="key">J</span><span>ドン</span></div>
+                    <div class="key-guide"><span class="key">K</span><span>カッ</span></div>
+                </div>
+            </div>
+
+            <div id="combo-display" class="hidden">
+                <span id="combo-count">0</span>
+                <span class="combo-label">COMBO</span>
+            </div>
+
+            <div id="judgment-display"></div>
+        </div>
+
+        <div id="start-screen" class="overlay active">
+            <h2>TAIKO RHYTHM</h2>
+            <p class="subtitle">Select Difficulty</p>
+
+            <div class="difficulty-select">
+                <button class="diff-btn easy" data-diff="easy">かんたん</button>
+                <button class="diff-btn normal" data-diff="normal">ふつう</button>
+                <button class="diff-btn hard" data-diff="hard">むずかしい</button>
+                <button class="diff-btn oni" data-diff="oni">おに</button>
+            </div>
+
+            <div class="instructions">
+                <p>Play to the rhythm!</p>
+                <div class="instruction-row"><span class="note-icon red"></span> <span class="key">F</span> or <span
+                        class="key">J</span> (Don)</div>
+                <div class="instruction-row"><span class="note-icon blue"></span> <span class="key">D</span> or <span
+                        class="key">K</span> (Ka)</div>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="overlay hidden">
+            <h2>RESULT</h2>
+            <div class="result-score">
+                <span class="result-label">Score</span>
+                <span id="final-score">0</span>
+            </div>
+            <div class="result-detail">
+                <p>Max Combo: <span id="max-combo">0</span></p>
+                <p>Perfect: <span id="perfect-count">0</span></p>
+                <p>Good: <span id="good-count">0</span></p>
+                <p>Miss: <span id="miss-count">0</span></p>
+            </div>
+            <button id="restart-btn">PLAY AGAIN</button>
+        </div>
+    </div>
+</body>
+
+</html>

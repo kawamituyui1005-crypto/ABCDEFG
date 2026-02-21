@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undertale-style Battle</title>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+
+        <!-- スタート画面と難易度選択 -->
+        <div id="start-screen">
+            <h1>Undertale-style Battle</h1>
+            <p>レベル（難易度）をえらんでね！</p>
+            <div id="difficulty-btns">
+                <button class="diff-btn" data-level="easy">かんたん</button>
+                <button class="diff-btn" data-level="normal">ふつう</button>
+                <button class="diff-btn" data-level="hard">むずかしい</button>
+            </div>
+        </div>
+
+        <!-- テキスト表示ボックス -->
+        <div id="dialog-box">
+            <p id="dialog-text">* あなたの 前に 敵が現れた。</p>
+        </div>
+
+        <!-- バトルボックス (プレイヤーが動ける範囲) -->
+        <div id="battle-box">
+            <div id="player"></div>
+        </div>
+
+        <!-- 残機表示 -->
+        <div id="hp-display">
+            HP <span id="hp-text">♥♥♥</span>
+        </div>
+
+        <!-- UIボタン群 (飾り) -->
+        <div id="ui-buttons">
+            <button class="btn ui-btn">FIGHT</button>
+            <button class="btn ui-btn">ACT</button>
+            <button class="btn ui-btn">ITEM</button>
+            <button class="btn ui-btn">MERCY</button>
+        </div>
+
+        <!-- ゲームオーバー画面 -->
+        <div id="game-over" class="hidden">
+            <h1>GAME OVER</h1>
+            <p>あきらめては いけない・・・</p>
+            <button id="restart-btn">Try Again</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

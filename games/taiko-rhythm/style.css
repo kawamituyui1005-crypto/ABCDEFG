@@ -1,0 +1,596 @@
+:root {
+    --bg-color: #111;
+    --lane-color: #333;
+    --don-color: #ff3333;
+    /* Red */
+    --ka-color: #33ccff;
+    /* Blue */
+    --hit-zone-border: #fff;
+    --text-color: #fff;
+    --neon-glow: 0 0 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Outfit', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image:
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('../../images/matsuri-bg.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 1000px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.game-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.back-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.game-title {
+    font-size: 2rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.score-display {
+    font-size: 1.5rem;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+}
+
+.game-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#lane-container {
+    height: 120px;
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    /* Reduced margin to fit gauge */
+}
+
+/* Soul Gauge */
+.gauge-container {
+    position: absolute;
+    top: -40px;
+    /* Position above lane */
+    right: 20px;
+    width: 600px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gauge-label {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    background: #f00;
+    padding: 2px 8px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px #f00;
+}
+
+.gauge-track {
+    flex: 1;
+    height: 20px;
+    background: #333;
+    border: 2px solid #555;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.gauge-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffcc00, #ff6600);
+    transition: width 0.2s ease-out;
+    box-shadow: 0 0 10px #ff6600;
+}
+
+.gauge-fill.cleared {
+    background: linear-gradient(90deg, #ffff00, #ff0000);
+    box-shadow: 0 0 15px #ff0000;
+}
+
+.gauge-fill.max {
+    background: linear-gradient(90deg, #ff00ff, #00ffff, #ffff00, #ff0000);
+    background-size: 200% 100%;
+    animation: rainbow 1s linear infinite;
+}
+
+.gauge-threshold-marker {
+    position: absolute;
+    top: 0;
+    left: 80%;
+    /* Clear line at 80% */
+    width: 2px;
+    height: 100%;
+    background: #fff;
+    z-index: 2;
+}
+
+@keyframes rainbow {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}
+
+#hit-zone {
+    position: absolute;
+    left: 100px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 90px;
+    height: 90px;
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    z-index: 5;
+}
+
+.hit-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.hit-animation {
+    animation: hitFlash 0.1s ease-out;
+}
+
+@keyframes hitFlash {
+    0% {
+        box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.5);
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+.note {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    z-index: 4;
+    transition: transform 0.1s;
+}
+
+.note.don {
+    background-color: var(--don-color);
+    box-shadow: 0 0 15px var(--don-color);
+}
+
+.note.ka {
+    background-color: var(--ka-color);
+    box-shadow: 0 0 15px var(--ka-color);
+}
+
+#drum-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.drum-container {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    border-radius: 50%;
+    background: #222;
+    border: 5px solid #444;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.drum-part {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transition: background-color 0.1s;
+}
+
+.drum-part.left {
+    left: 0;
+}
+
+.drum-part.right {
+    right: 0;
+}
+
+.drum-part.don {
+    top: 25%;
+    height: 50%;
+    background: #400;
+}
+
+.drum-part.don.left {
+    border-radius: 100px 0 0 100px;
+    border-right: 1px solid #222;
+}
+
+.drum-part.don.right {
+    border-radius: 0 100px 100px 0;
+    border-left: 1px solid #222;
+}
+
+.drum-part.ka {
+    height: 100%;
+    top: 0;
+    z-index: -1;
+    background: #002233;
+}
+
+/* Active states for drum animation */
+.drum-part.don.active {
+    background: var(--don-color);
+    box-shadow: 0 0 20px var(--don-color);
+}
+
+.drum-part.ka.active {
+    background: var(--ka-color);
+    box-shadow: 0 0 20px var(--ka-color);
+}
+
+.controls-guide {
+    display: flex;
+    gap: 30px;
+    font-size: 1.2rem;
+}
+
+.key-guide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.key {
+    display: inline-block;
+    padding: 5px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    font-weight: 800;
+}
+
+#combo-display {
+    position: absolute;
+    top: 40px;
+    /* Above lane */
+    left: 90px;
+    /* Aligned with hit zone */
+    text-align: center;
+    pointer-events: none;
+}
+
+#combo-display.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s;
+}
+
+#combo-count {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffeb3b;
+    text-shadow: 0 0 10px #ffeb3b;
+    line-height: 1;
+}
+
+.combo-label {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #ffeb3b;
+}
+
+#judgment-display {
+    position: absolute;
+    top: 130px;
+    /* Below lane */
+    left: 145px;
+    /* Center of hit zone */
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+    font-weight: 800;
+    height: 30px;
+    pointer-events: none;
+}
+
+.judgment-perfect {
+    color: #fe0;
+    text-shadow: 0 0 10px #fe0;
+    animation: pop 0.2s;
+}
+
+.judgment-good {
+    color: #fff;
+    text-shadow: 0 0 10px #fff;
+    animation: pop 0.2s;
+}
+
+.judgment-miss {
+    color: #888;
+    animation: shake 0.2s;
+}
+
+@keyframes pop {
+    0% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateX(-50%) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateX(0);
+    }
+
+    25% {
+        transform: translateX(-50%) translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(-50%) translateX(5px);
+    }
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s;
+}
+
+.overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay h2 {
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    margin-bottom: 20px;
+}
+
+.instructions {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.instruction-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+.note-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid #fff;
+}
+
+.note-icon.red {
+    background: var(--don-color);
+}
+
+.note-icon.blue {
+    background: var(--ka-color);
+}
+
+button {
+    margin-top: 30px;
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: transparent;
+    border: 2px solid var(--don-color);
+    color: var(--don-color);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background: var(--don-color);
+    color: #fff;
+    box-shadow: 0 0 20px var(--don-color);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.main-start-btn {
+    padding: 20px 60px;
+    font-size: 2rem;
+    background: #FF0000;
+    color: #fff;
+    border: 4px solid #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 20px #FF0000;
+    animation: pulse 1s infinite;
+    margin-bottom: 10px;
+}
+
+.main-start-btn:hover {
+    background: #fff;
+    color: #FF0000;
+    transform: scale(1.1);
+}
+
+.difficulty-select {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 30px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.diff-btn {
+    padding: 10px 20px;
+    margin-top: 0;
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    background: transparent;
+    transition: all 0.2s;
+    min-width: 80px;
+}
+
+.diff-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px currentColor;
+    background: currentColor;
+    color: #000;
+    border-color: transparent;
+}
+
+.diff-btn.easy {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.diff-btn.normal {
+    color: #8BC34A;
+    border-color: #8BC34A;
+}
+
+/* Actually standard Taiko normal is usually Greenish/Bamboo */
+.diff-btn.hard {
+    color: #FF9800;
+    border-color: #FF9800;
+}
+
+/* Pine/Bamboo/Cherry Blossom colors usually used, sticking to generic difficulty colors for clarity */
+/* Standard Taiko: Easy(Flower-Pink), Normal(Bamboo-Green), Hard(Tree-Brown/Orange), Oni(Demon-Purple/Pink) */
+.diff-btn.easy {
+    color: #ff69b4;
+    border-color: #ff69b4;
+}
+
+/* Kantan - Pink */
+.diff-btn.normal {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+/* Futsuu - Green */
+.diff-btn.hard {
+    color: #FF5722;
+    border-color: #FF5722;
+}
+
+/* Muzukashii - Orange/Red */
+.diff-btn.oni {
+    color: #E040FB;
+    border-color: #E040FB;
+}
+
+/* Oni - Purple */
+
+.result-score {
+    font-size: 3rem;
+    margin: 20px 0;
+    color: #ffeb3b;
+}
+
+.result-detail {
+    text-align: left;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+}

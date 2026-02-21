@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yuimaru | Portfolio</title>
+    <meta name="description" content="クリエイター yuimaru のポートフォリオサイトです。作品集や自己紹介を掲載しています。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <header class="header">
+        <div class="logo">yuimaru</div>
+        <nav class="nav">
+            <ul class="nav-list">
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#works" class="nav-link">Works</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </nav>
+        <button class="menu-toggle" aria-label="Menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </header>
+
+    <main>
+        <section id="hero" class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="text-reveal">Beyond</span><br>
+                    <span class="text-reveal">Imagination</span>
+                </h1>
+                <p class="hero-subtitle">Digital Creator / Designer</p>
+                <a href="#works" class="cta-button">View My Works</a>
+            </div>
+            <div class="hero-background"></div>
+        </section>
+
+        <section id="about" class="section about">
+            <div class="container container-narrow">
+                <h2 class="section-title">About Me</h2>
+                <div class="about-content fade-in">
+                    <p class="about-text">
+                        こんにちは、yuimaruです。<br>
+                        デジタル領域を中心に、感情を揺さぶる体験を創造するクリエイターです。<br>
+                        コードとデザインの境界を超え、新しく美しい表現を追求しています。
+                    </p>
+                    <p class="about-text">
+                        HTML, CSS, JavaScriptを用いたインタラクティブなWeb表現を得意とし、
+                        常にユーザーの心に残るものづくりを心がけています。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="works" class="section works">
+            <div class="container">
+                <h2 class="section-title">Selected Works</h2>
+                <div class="works-grid">
+                    <!-- Work Card 1 -->
+                    <!-- Work Card 1 -->
+                    <!-- Work Card 1 -->
+                    <article class="work-card fade-in">
+                        <div class="work-image-wrapper">
+                            <img src="images/taiko-rhythm.png" alt="Taiko Rhythm" class="work-image">
+                        </div>
+                        <div class="work-content">
+                            <h3 class="work-title">Taiko Rhythm</h3>
+                            <p class="work-desc">Web Audio APIを活用したブラウザで遊べる和風リズムゲーム。正確な判定と快適な打鍵感を追求。</p>
+                            <a href="games/taiko-rhythm/game.html" class="work-link">Play Game <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <!-- Work Card 2 -->
+                    <article class="work-card fade-in delay-1">
+                        <div class="work-image-wrapper">
+                            <img src="images/undertale_cover.svg" alt="Undertale Clone" class="work-image">
+                        </div>
+                        <div class="work-content">
+                            <h3 class="work-title">Undertale Battle Clone</h3>
+                            <p class="work-desc">HTML/CSS/JSのみで実装された、弾幕避けミニゲーム。プレイヤーの赤いハートを操作し、迫り来る弾を避け続けよう。</p>
+                            <a href="games/undertale-battle/index.html" class="work-link">Play Game <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <!-- Work Card 3 -->
+                    <article class="work-card fade-in delay-2">
+                        <div class="work-image-wrapper">
+                            <img src="images/work3.png" alt="Abstract Motion" class="work-image">
+                        </div>
+                        <div class="work-content">
+                            <h3 class="work-title">Abstract Motion</h3>
+                            <p class="work-desc">CSSアニメーションとSVGを組み合わせた、抽象的で有機的なモーショングラフィックス。</p>
+                            <a href="#" class="work-link">View Project <span class="arrow">→</span></a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section contact">
+            <div class="container container-narrow">
+                <h2 class="section-title">Contact</h2>
+                <p class="contact-text fade-in">
+                    制作のご依頼やご相談は、お気軽に下記よりお問い合わせください。
+                </p>
+                <a href="mailto:hello@yuimaru.design" class="contact-email fade-in">hello@yuimaru.design</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p class="copyright">&copy; 2024 yuimaru. All Rights Reserved.</p>
+    </footer>
+</body>
+
+</html>

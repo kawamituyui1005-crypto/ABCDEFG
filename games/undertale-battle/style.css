@@ -1,0 +1,271 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: 'DotGothic16', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+#game-container {
+    width: 600px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    user-select: none;
+}
+
+/* 難易度選択スタート画面 */
+#start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+}
+
+#start-screen h1 {
+    font-family: 'VT323', monospace;
+    font-size: 52px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#start-screen p {
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+#difficulty-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 60%;
+}
+
+.diff-btn {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+    font-family: 'DotGothic16', monospace;
+    font-size: 24px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.diff-btn:hover {
+    background: white;
+    color: black;
+    transform: scale(1.05);
+    /* 選択しやすさを追加 */
+}
+
+/* ダイアログテキスト */
+#dialog-box {
+    width: 100%;
+    height: 120px;
+    border: 4px solid white;
+    margin-bottom: 20px;
+    padding: 15px 25px;
+    box-sizing: border-box;
+    font-size: 28px;
+}
+
+#dialog-text {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* プレイヤーが動く箱 */
+#battle-box {
+    width: 250px;
+    height: 250px;
+    border: 4px solid white;
+    position: relative;
+    margin-bottom: 15px;
+    overflow: hidden;
+    transition: transform 0.1s;
+    /* ヒットアニメーション用 */
+}
+
+/* プレイヤー (赤いハート) */
+#player {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+    clip-path: polygon(50% 100%, 0 50%, 0 0, 50% 30%, 100% 0, 100% 50%);
+}
+
+/* 各種弾丸のスタイル */
+.bullet {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.bullet-bone-v {
+    width: 8px;
+    height: 48px;
+    background-color: white;
+}
+
+.bullet-bone-v::before,
+.bullet-bone-v::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 10px;
+    background-color: white;
+    border-radius: 10px;
+    left: -6px;
+}
+
+.bullet-bone-v::before {
+    top: -5px;
+}
+
+.bullet-bone-v::after {
+    bottom: -5px;
+}
+
+.bullet-bone-h {
+    width: 48px;
+    height: 8px;
+    background-color: white;
+}
+
+.bullet-bone-h::before,
+.bullet-bone-h::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 20px;
+    background-color: white;
+    border-radius: 10px;
+    top: -6px;
+}
+
+.bullet-bone-h::before {
+    left: -5px;
+}
+
+.bullet-bone-h::after {
+    right: -5px;
+}
+
+.bullet-star {
+    width: 20px;
+    height: 20px;
+    background-color: #ffff00;
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    box-shadow: 0 0 5px #ffaa00;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* HP表示枠 */
+#hp-display {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 15px;
+    font-size: 24px;
+    color: red;
+}
+
+#hp-text {
+    margin-left: 10px;
+}
+
+/* 装飾用UIボタン */
+#ui-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.ui-btn {
+    background-color: black;
+    color: #ff9900;
+    border: 2px solid #ff9900;
+    border-radius: 0;
+    padding: 10px 15px;
+    font-size: 24px;
+    font-family: 'VT323', 'DotGothic16', monospace;
+    cursor: default;
+    width: 22%;
+    opacity: 0.5;
+    /* 今回はただの飾りなので少し薄く */
+}
+
+/* ゲームオーバー画面 */
+#game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#game-over h1 {
+    font-family: 'VT323', monospace;
+    font-size: 64px;
+    margin-bottom: 10px;
+}
+
+#game-over p {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+#restart-btn {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+    font-family: 'VT323', 'DotGothic16', monospace;
+    font-size: 24px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#restart-btn:hover {
+    background: white;
+    color: black;
+}
+
+/* 共通ユーティリティ */
+.hidden {
+    display: none !important;
+}
