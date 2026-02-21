@@ -40,31 +40,53 @@ const TEMPO = 140; // BPM
 const TENTH_SEC = (60 / TEMPO) / 4; // 1拍の1/4の長さ（秒単位）
 
 function playNote(frequency, startTime, duration) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    // ストリートピアノ風の音色（Web Audio APIによる簡易合成）
 
-    // 8ビット風の音色（矩形波）
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(frequency, startTime);
+    // メインの音（やわらかいサイン波）
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(frequency, startTime);
 
-    // 少しデチューンさせて厚みを出す
-    const detuneOsc = audioCtx.createOscillator();
-    detuneOsc.type = 'square';
-    detuneOsc.frequency.setValueAtTime(frequency, startTime);
-    detuneOsc.detune.setValueAtTime(10, startTime); // 少しピッチをズラす
+    // ピアノらしい明るさを足す倍音（トライアングル波）
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(frequency, startTime);
 
-    // ボリューム設定 (少し小さめにする)
-    gain.gain.setValueAtTime(0.04, startTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration - 0.05); // 音の切れ目をはっきりさせる
+    // ハンマーが弦を叩くようなアタック音成分
+    const attackOsc = audioCtx.createOscillator();
+    attackOsc.type = 'sine';
+    attackOsc.frequency.setValueAtTime(frequency * 2, startTime);
 
-    osc.connect(gain);
-    detuneOsc.connect(gain);
-    gain.connect(audioCtx.destination);
+    const mainGain = audioCtx.createGain();
+    const attackGain = audioCtx.createGain();
 
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-    detuneOsc.start(startTime);
-    detuneOsc.stop(startTime + duration);
+    // メインの余韻（ペダルを踏んだようなストリートピアノ感を出すために長めに鳴らす）
+    mainGain.gain.setValueAtTime(0, startTime);
+    mainGain.gain.linearRampToValueAtTime(0.3, startTime + 0.01); // 素早い立ち上がり
+    mainGain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.5); // ゆっくり自然減衰
+
+    // アタック音のエンベロープ（一瞬だけ鳴る）
+    attackGain.gain.setValueAtTime(0, startTime);
+    attackGain.gain.linearRampToValueAtTime(0.1, startTime + 0.005);
+    attackGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
+
+    // 接続
+    osc1.connect(mainGain);
+    osc2.connect(mainGain);
+    attackOsc.connect(attackGain);
+
+    mainGain.connect(audioCtx.destination);
+    attackGain.connect(audioCtx.destination);
+
+    // 再生開始
+    osc1.start(startTime);
+    osc2.start(startTime);
+    attackOsc.start(startTime);
+
+    // 十分な余韻のあとに停止
+    osc1.stop(startTime + 2.0);
+    osc2.stop(startTime + 2.0);
+    attackOsc.stop(startTime + 0.2);
 }
 
 function scheduler() {
