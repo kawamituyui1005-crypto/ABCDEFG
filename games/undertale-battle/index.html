@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Undertale-style Battle</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -60,6 +60,16 @@
             <p>あなたは ケツイで みたされた！</p>
             <p>FINAL SCORE: <span id="final-score">0</span></p>
             <button id="clear-restart-btn">Try Again</button>
+        </div>
+
+        <!-- スマホ用操作パッド（D-Pad） -->
+        <div id="d-pad">
+            <button class="d-btn" id="d-up">▲</button>
+            <div class="d-row">
+                <button class="d-btn" id="d-left">◀</button>
+                <button class="d-btn" id="d-down">▼</button>
+                <button class="d-btn" id="d-right">▶</button>
+            </div>
         </div>
     </div>
     <script src="audio.js"></script>

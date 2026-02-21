@@ -74,6 +74,24 @@ function initEvent() {
         keys[e.key] = false;
     });
 
+    const bindDPad = (id, key) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const press = (e) => { if (e.cancelable) e.preventDefault(); keys[key] = true; };
+        const release = (e) => { if (e.cancelable) e.preventDefault(); keys[key] = false; };
+
+        el.addEventListener('touchstart', press, { passive: false });
+        el.addEventListener('touchend', release, { passive: false });
+        el.addEventListener('mousedown', press);
+        el.addEventListener('mouseup', release);
+        el.addEventListener('mouseleave', release);
+    };
+
+    bindDPad('d-up', 'ArrowUp');
+    bindDPad('d-down', 'ArrowDown');
+    bindDPad('d-left', 'ArrowLeft');
+    bindDPad('d-right', 'ArrowRight');
+
     restartBtn.addEventListener('click', () => {
         gameOverScreen.classList.add('hidden');
         startScreen.classList.remove('hidden');
