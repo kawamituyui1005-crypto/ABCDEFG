@@ -3,77 +3,85 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Undertale-style Battle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undertale-style Battle | Select Version</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .select-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .select-title {
+            font-family: 'VT323', monospace;
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+
+        .select-options {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .select-card {
+            background: #000;
+            border: 4px solid #fff;
+            padding: 2rem;
+            width: 250px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .select-card:hover {
+            background: #fff;
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .version-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .version-desc {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="game-container">
-
-        <!-- スタート画面と難易度選択 -->
-        <div id="start-screen">
-            <h1>Undertale-style Battle</h1>
-            <p>レベル（難易度）をえらんでね！</p>
-            <div id="difficulty-btns">
-                <button class="diff-btn" data-level="easy">かんたん</button>
-                <button class="diff-btn" data-level="normal">ふつう</button>
-                <button class="diff-btn" data-level="hard">むずかしい</button>
-            </div>
+    <div class="select-container">
+        <h1 class="select-title">SELECT VERSION</h1>
+        <div class="select-options">
+            <a href="game_pc.html" class="select-card">
+                <span class="icon">⌨️</span>
+                <span class="version-name">PC版</span>
+                <p class="version-desc">キーボード操作にお勧め</p>
+            </a>
+            <a href="game_mobile.html" class="select-card">
+                <span class="icon">📱</span>
+                <span class="version-name">スマホ版</span>
+                <p class="version-desc">タッチパネル操作にお勧め</p>
+            </a>
         </div>
-
-        <!-- テキスト表示ボックス -->
-        <div id="dialog-box">
-            <p id="dialog-text">* あなたの 前に 敵が現れた。</p>
-        </div>
-
-        <!-- バトルボックス (プレイヤーが動ける範囲) -->
-        <div id="battle-box">
-            <div id="player"></div>
-        </div>
-
-        <!-- 残機表示とスコア表示 -->
-        <div id="hp-display">
-            HP <span id="hp-text">♥♥♥</span>
-            <span id="score-text" style="float: right;">SCORE: 0</span>
-        </div>
-
-        <!-- UIボタン群 (飾り) -->
-        <div id="ui-buttons">
-            <button class="btn ui-btn">FIGHT</button>
-            <button class="btn ui-btn">ACT</button>
-            <button class="btn ui-btn">ITEM</button>
-            <button class="btn ui-btn">MERCY</button>
-        </div>
-
-        <!-- ゲームオーバー画面 -->
-        <div id="game-over" class="hidden">
-            <h1>GAME OVER</h1>
-            <p>あきらめては いけない・・・</p>
-            <button id="restart-btn">Try Again</button>
-        </div>
-
-        <!-- ゲームクリア画面 -->
-        <div id="game-clear" class="hidden">
-            <h1>GAME CLEAR!</h1>
-            <p>あなたは ケツイで みたされた！</p>
-            <p>FINAL SCORE: <span id="final-score">0</span></p>
-            <button id="clear-restart-btn">Try Again</button>
-        </div>
-
-        <!-- スマホ用操作パッド（D-Pad） -->
-        <div id="d-pad">
-            <button class="d-btn" id="d-up">▲</button>
-            <div class="d-row">
-                <button class="d-btn" id="d-left">◀</button>
-                <button class="d-btn" id="d-down">▼</button>
-                <button class="d-btn" id="d-right">▶</button>
-            </div>
-        </div>
+        <p style="margin-top: 3rem; color: #666; font-size: 0.8rem;">* あなたの デバイスに 合わせて えらんでね。</p>
     </div>
-    <script src="audio.js"></script>
-    <script src="script.js"></script>
 </body>
 
 </html>

@@ -22,7 +22,8 @@ let score = 0;
 const CLEAR_SCORE = 20000;
 
 // 残機（HP）と無敵時間（Invincibility）の管理用
-let playerHP = 3;
+let playerHP = 20;
+const MAX_HP = 20;
 let isInvincible = false;
 let invincibilityFrames = 0;
 
@@ -36,19 +37,26 @@ const difficultySettings = {
 
 let currentAttackPattern = 0;
 
+function updateHPUI() {
+    const hpBarFill = document.getElementById('hp-bar-fill');
+    const hpText = document.getElementById('hp-text');
+    if (hpBarFill) {
+        const percent = (playerHP / MAX_HP) * 100;
+        hpBarFill.style.width = percent + '%';
+    }
+    if (hpText) {
+        hpText.innerText = `${playerHP} / ${MAX_HP}`;
+    }
+}
+
 function hitPlayer() {
     if (isInvincible) return; // 無敵中はダメージを受けない
 
-    playerHP--;
+    playerHP -= 4; // 1回でHP4減少 (MAX 20)
+    if (playerHP < 0) playerHP = 0;
 
-    // 残機表示の更新
-    if (hpText) {
-        let heartStr = '';
-        for (let j = 0; j < playerHP; j++) heartStr += '♥';
-        for (let j = playerHP; j < 3; j++) heartStr += '♡';
-        hpText.innerText = heartStr;
-        hpText.style.color = playerHP === 1 ? 'yellow' : 'red';
-    }
+    // HP表示の更新
+    updateHPUI();
 
     if (playerHP <= 0) {
         gameOver();
@@ -121,7 +129,7 @@ function startGame() {
     gameOverScreen.classList.add('hidden');
     startScreen.classList.add('hidden');
 
-    playerHP = 3;
+    playerHP = MAX_HP;
     isInvincible = false;
     invincibilityFrames = 0;
     player.style.opacity = '1';
@@ -131,10 +139,7 @@ function startGame() {
     score = 0;
     if (scoreText) scoreText.innerText = 'SCORE: 0';
 
-    if (hpText) {
-        hpText.innerText = '♥♥♥';
-        hpText.style.color = 'red';
-    }
+    updateHPUI();
 
     // 古い弾をすべて消す
     bullets.forEach(b => b.element.remove());

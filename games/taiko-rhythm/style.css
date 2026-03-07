@@ -26,11 +26,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image:
-        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-        url('../../images/matsuri-bg.png');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../../images/matsuri-bg.png');
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
 }
 
 .game-container {
@@ -88,15 +87,22 @@ body {
 
 /* Soul Gauge */
 .gauge-container {
-    position: absolute;
-    top: -40px;
-    /* Position above lane */
-    right: 20px;
+    position: fixed;
+    top: 80px;
+    /* Fixed position below header */
+    left: 50%;
+    transform: translateX(-50%);
     width: 600px;
-    height: 30px;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .gauge-label {
@@ -112,42 +118,50 @@ body {
 
 .gauge-track {
     flex: 1;
-    height: 20px;
-    background: #333;
+    height: 24px;
+    background: #222;
     border: 2px solid #555;
-    border-radius: 10px;
+    border-radius: 4px;
+    /* Sharper corners for rectangle */
     position: relative;
-    overflow: hidden;
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    overflow: visible;
 }
 
-.gauge-fill {
+.gauge-segment {
+    flex: 1;
     height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #ffcc00, #ff6600);
-    transition: width 0.2s ease-out;
-    box-shadow: 0 0 10px #ff6600;
+    background: #333;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.gauge-fill.cleared {
-    background: linear-gradient(90deg, #ffff00, #ff0000);
-    box-shadow: 0 0 15px #ff0000;
+.gauge-segment.active {
+    background: linear-gradient(to bottom, #ffea00, #ff9500);
+    box-shadow: 0 0 8px rgba(255, 200, 0, 0.6);
 }
 
-.gauge-fill.max {
-    background: linear-gradient(90deg, #ff00ff, #00ffff, #ffff00, #ff0000);
-    background-size: 200% 100%;
+.gauge-segment.cleared.active {
+    background: linear-gradient(to bottom, #fff700, #ff3300);
+    box-shadow: 0 0 12px rgba(255, 50, 0, 0.8);
+}
+
+.gauge-segment.max.active {
+    background: linear-gradient(to bottom, #ff00ff, #00ffff);
     animation: rainbow 1s linear infinite;
 }
 
 .gauge-threshold-marker {
     position: absolute;
-    top: 0;
+    top: -5px;
+    bottom: -5px;
     left: 80%;
-    /* Clear line at 80% */
-    width: 2px;
-    height: 100%;
+    /* 8th segment boundary */
+    width: 3px;
     background: #fff;
-    z-index: 2;
+    box-shadow: 0 0 10px #fff;
+    z-index: 5;
 }
 
 @keyframes rainbow {
@@ -206,7 +220,7 @@ body {
     border-radius: 50%;
     border: 3px solid #fff;
     z-index: 4;
-    transition: transform 0.1s;
+    transition: transform 0.05s linear;
 }
 
 .note.don {
@@ -575,9 +589,105 @@ button:hover {
 }
 
 /* Muzukashii - Orange/Red */
+/* クリア判定テキスト */
+.clear-status-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.status-clear {
+    color: #ff3333;
+    /* 赤（達成） */
+}
+
+.status-fail {
+    color: #33ccff;
+    /* 青（失敗） */
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 .diff-btn.oni {
     color: #E040FB;
     border-color: #E040FB;
+}
+
+/* Song Selection Styles */
+.song-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+
+.song-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.song-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    border-color: #ffeb3b;
+}
+
+.song-card.selected {
+    border-color: #ffeb3b;
+    background: rgba(255, 235, 59, 0.15);
+    box-shadow: 0 0 15px rgba(255, 235, 59, 0.3);
+}
+
+.song-name {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.song-bpm {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    padding: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.text-btn:hover {
+    color: #fff;
+    background: none;
+    box-shadow: none;
+}
+
+.hidden {
+    display: none !important;
 }
 
 /* Oni - Purple */

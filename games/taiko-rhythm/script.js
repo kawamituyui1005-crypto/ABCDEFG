@@ -14,7 +14,11 @@ const perfectCountEl = document.getElementById('perfect-count');
 const goodCountEl = document.getElementById('good-count');
 const missCountEl = document.getElementById('miss-count');
 const restartBtn = document.getElementById('restart-btn');
-const gaugeFillEl = document.getElementById('gauge-fill'); // Added
+const gaugeSegments = document.querySelectorAll('.gauge-segment');
+const songListContainer = document.getElementById('song-list-container');
+const songSelection = document.getElementById('song-selection');
+const difficultySelection = document.getElementById('difficulty-selection');
+const backToSongsBtn = document.getElementById('back-to-songs');
 
 // Drum parts
 const drumParts = {
@@ -25,10 +29,10 @@ const drumParts = {
 };
 
 // Game Constants
-const LANE_WIDTH = 800; // Approx visible width
-const HIT_X = 145; // Hit zone center X relative to lane start
-const NOTE_SPEED = 500; // Pixels per second
-const SPAWN_X = 1000; // Spawn position off-screen
+const LANE_WIDTH = 800;
+const HIT_X = 145;
+const NOTE_SPEED = 500;
+const SPAWN_X = 1000;
 
 // Game State
 let isGameActive = false;
@@ -39,12 +43,18 @@ let startTime = 0;
 let animationFrameId;
 let notes = [];
 let noteIndex = 0;
-let gauge = 0; // Added
+let gauge = 0;
 const MAX_GAUGE = 100;
 const CLEAR_THRESHOLD = 80;
-const GAUGE_GAIN_PERFECT = 2;
-const GAUGE_GAIN_GOOD = 1;
-const GAUGE_LOSS_MISS = 3;
+
+// Difficulty-based Gauge Settings
+const GAUGE_SETTINGS = {
+    easy: { perfect: 5.0, good: 2.5, miss: 2.0 },
+    normal: { perfect: 4.0, good: 2.0, miss: 5.0 },
+    hard: { perfect: 0.625, good: 0.3, miss: 10.0 },
+    oni: { perfect: 0.33, good: 0.15, miss: 20.0 }
+};
+let currentGaugeConfig = GAUGE_SETTINGS.normal;
 
 // Stats
 let stats = {
@@ -53,73 +63,50 @@ let stats = {
     miss: 0
 };
 
+// 楽曲データは songs.js に移行されました。
+let currentSong = SONG_LIST[0];
+let bgmIntervalId = null;
+
 // Map Data
 let mapData = [];
 
 function generateMap(difficulty = 'normal') {
     mapData = [];
 
-    // Difficulty Settings
-    let bpm = 120;
-    let prob4th = 0.8;
-    let prob8th = 0;
-    let prob16th = 0;
-    let songLength = 100;
+    const bpm = currentSong.bpm;
+    const beatInterval = 60000 / bpm;
+    const startDelay = 2000;
 
-    switch (difficulty) {
-        case 'easy': // Kantan
-            bpm = 100;
-            prob4th = 0.9;
-            prob8th = 0.0;
-            prob16th = 0.0;
-            songLength = 80;
-            break;
-        case 'normal': // Futsuu
-            bpm = 130;
-            prob4th = 0.6;
-            prob8th = 0.3;
-            prob16th = 0.0;
-            songLength = 120;
-            break;
-        case 'hard': // Muzukashii
-            bpm = 150;
-            prob4th = 0.4;
-            prob8th = 0.5;
-            prob16th = 0.05;
-            songLength = 180;
-            break;
-        case 'oni': // Oni
-            bpm = 180;
-            prob4th = 0.1;
-            prob8th = 0.5;
-            prob16th = 0.4;
-            songLength = 250;
-            break;
-    }
+    mapData.push({ time: 0, type: 'start_bgm' });
 
-    const beatInterval = 60000 / bpm; // ms per beat
-    let time = 2000; // Start delay
+    const songId = currentSong.id;
+    const beatmapSet = BEATMAPS[songId];
+    const pattern = beatmapSet ? (beatmapSet[difficulty] || beatmapSet.normal) : null;
 
-    // Create pattern
-    for (let i = 0; i < songLength; i++) {
-        const r = Math.random();
-        let type = Math.random() > 0.45 ? 'don' : 'ka';
-
-        if (r < prob4th) {
-            mapData.push({ time: time, type: type });
-        } else if (r < prob4th + prob8th) {
-            mapData.push({ time: time, type: type });
-            mapData.push({ time: time + (beatInterval / 2), type: Math.random() > 0.5 ? 'don' : 'ka' });
-        } else if (r < prob4th + prob8th + prob16th) {
-            for (let j = 0; j < 4; j++) {
-                mapData.push({ time: time + (beatInterval / 4) * j, type: Math.random() > 0.5 ? 'don' : 'ka' });
-            }
+    if (pattern) {
+        const loops = difficulty === 'oni' ? 8 : difficulty === 'hard' ? 6 : 5;
+        const beatsPerLoop = 16;
+        for (let loop = 0; loop < loops; loop++) {
+            pattern.forEach(note => {
+                const timeMs = startDelay + (loop * beatsPerLoop * beatInterval) + (note.at * beatInterval);
+                mapData.push({ time: timeMs, type: note.t === 'd' ? 'don' : 'ka' });
+            });
         }
-
-        time += beatInterval;
+    } else {
+        let time = startDelay;
+        const songLength = difficulty === 'oni' ? 100 : difficulty === 'hard' ? 70 : 40;
+        for (let i = 0; i < songLength; i++) {
+            const type = Math.random() > 0.4 ? 'don' : 'ka';
+            mapData.push({ time, type });
+            time += beatInterval;
+        }
     }
-    // End marker
-    mapData.push({ time: time + 2000, type: 'end' });
+
+    mapData.sort((a, b) => a.time - b.time);
+
+    const lastNote = mapData[mapData.length - 1];
+    const endTime = (lastNote ? lastNote.time : startDelay) + 2000;
+    mapData.push({ time: endTime, type: 'end' });
 }
 
 // Key mapping
@@ -142,6 +129,154 @@ function initAudio() {
     }
 }
 
+function startBGM(bpm) {
+    if (!audioCtx) initAudio();
+
+    const beatSec = 60 / bpm;
+    const melodyKey = currentSong.basePattern;
+    const melodyNotes = BGM_MELODIES[melodyKey] || BGM_MELODIES.matsuri;
+
+    let noteIndex = 0;
+    let currentBeatTime = audioCtx.currentTime + 0.1;
+
+    function scheduleMelody() {
+        if (!isGameActive) return;
+        while (currentBeatTime < audioCtx.currentTime + 0.5) {
+            const [freq, durBeats] = melodyNotes[noteIndex % melodyNotes.length];
+            const durSec = durBeats * beatSec;
+            playMelodyNote(freq, currentBeatTime, durSec * 0.8);
+            currentBeatTime += durSec;
+            noteIndex++;
+        }
+        setTimeout(scheduleMelody, 150);
+    }
+
+    let drumTime = audioCtx.currentTime + 0.1;
+    function scheduleDrum() {
+        if (!isGameActive) return;
+        while (drumTime < audioCtx.currentTime + 0.5) {
+            const beat = Math.round((drumTime - audioCtx.currentTime) / beatSec) % 4;
+            createBgmDrum('low', drumTime);
+            if (beat % 2 === 1) createBgmDrum('high', drumTime + beatSec * 0.5);
+            drumTime += beatSec;
+        }
+        setTimeout(scheduleDrum, 150);
+    }
+
+    let bassTime = audioCtx.currentTime + 0.1;
+    function scheduleBass() {
+        if (!isGameActive) return;
+        while (bassTime < audioCtx.currentTime + 0.5) {
+            const bassFreq = 110;
+            playBassNote(bassFreq, bassTime, beatSec * 0.7);
+            bassTime += beatSec * 2;
+        }
+        setTimeout(scheduleBass, 150);
+    }
+
+    scheduleMelody();
+    scheduleDrum();
+    scheduleBass();
+}
+
+function playMelodyNote(freq, time, dur) {
+    const melodyKey = currentSong.basePattern;
+    const style = (INSTRUMENT_STYLES[melodyKey] || INSTRUMENT_STYLES.matsuri).melody;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    let destination = audioCtx.destination;
+
+    if (style.filter) {
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = style.filter.type;
+        filter.frequency.value = style.filter.freq;
+        filter.connect(audioCtx.destination);
+        destination = filter;
+    }
+
+    osc.connect(gain);
+    gain.connect(destination);
+    osc.type = style.type;
+    osc.frequency.setValueAtTime(freq, time);
+
+    if (style.pitchSlide) {
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.98, time + dur * 0.3);
+    }
+
+    if (style.harmonics) {
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 2, time);
+        gain2.gain.setValueAtTime(style.gain * 0.4, time);
+        gain2.gain.exponentialRampToValueAtTime(0.001, time + dur * 0.6);
+        osc2.start(time);
+        osc2.stop(time + dur);
+    }
+
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(style.gain, time + style.attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + Math.min(dur * style.decay, dur));
+    osc.start(time);
+    osc.stop(time + dur);
+}
+
+function playBassNote(freq, time, dur) {
+    const melodyKey = currentSong.basePattern;
+    const style = (INSTRUMENT_STYLES[melodyKey] || INSTRUMENT_STYLES.matsuri).bass;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    let destination = audioCtx.destination;
+
+    if (style.filter) {
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = style.filter.type;
+        filter.frequency.value = style.filter.freq;
+        filter.connect(audioCtx.destination);
+        destination = filter;
+    }
+
+    osc.connect(gain);
+    gain.connect(destination);
+    osc.type = style.type;
+    osc.frequency.setValueAtTime(freq, time);
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(style.gain, time + style.attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + Math.min(dur * style.decay, dur));
+    osc.start(time);
+    osc.stop(time + dur);
+}
+
+function createBgmDrum(type, time) {
+    const style = INSTRUMENT_STYLES[currentSong.basePattern] || INSTRUMENT_STYLES.matsuri;
+    const drumStyle = style.drum;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'low') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(drumStyle.kickFreq[0], time);
+        osc.frequency.exponentialRampToValueAtTime(drumStyle.kickFreq[1], time + 0.12);
+        gainNode.gain.setValueAtTime(drumStyle.kickGain, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+    } else {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(drumStyle.hihatFreq[0], time);
+        osc.frequency.exponentialRampToValueAtTime(drumStyle.hihatFreq[1], time + 0.06);
+        gainNode.gain.setValueAtTime(drumStyle.hihatGain, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+    }
+
+    osc.start(time);
+    osc.stop(time + 0.18);
+}
+
 function createSound(type) {
     if (!audioCtx) return;
     const osc = audioCtx.createOscillator();
@@ -151,49 +286,39 @@ function createSound(type) {
     gainNode.connect(audioCtx.destination);
 
     if (type === 'don') {
-        // Deeper, punchier kick-like sound
-        osc.type = 'triangle'; // Triangle has more body than sine
-        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.1);
-
-        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-
-        osc.stop(audioCtx.currentTime + 0.15);
-    } else { // ka
-        // Sharper, higher rim-shot like sound
-        osc.type = 'square'; // Square rich harmonics for 'clack'
-        // Filter to remove harsh highs
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    } else {
+        osc.type = 'square';
         const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 3000;
-
+        filter.type = 'highpass';
+        filter.frequency.value = 1000;
         osc.disconnect();
         osc.connect(filter);
         filter.connect(gainNode);
-
         osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
-
-        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-
-        osc.stop(audioCtx.currentTime + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
     }
-
-    osc.start();
 }
 
 function playSound(type) {
-    // Only verify audio context exists
     if (!audioCtx) initAudio();
     createSound(type);
 }
 
-// Game Loop
 function startGame(difficulty = 'normal') {
-    initAudio(); // Initialize audio on start interaction
+    initAudio();
     generateMap(difficulty);
+    currentGaugeConfig = GAUGE_SETTINGS[difficulty] || GAUGE_SETTINGS.normal;
     isGameActive = true;
     score = 0;
     combo = 0;
@@ -203,19 +328,18 @@ function startGame(difficulty = 'normal') {
     notes = [];
     startTime = performance.now();
 
-    // UI Reset
     scoreEl.innerText = '0';
     comboDisplay.classList.add('hidden');
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
 
-    // Clear lane
-    const existingNotes = document.querySelectorAll('.note');
-    existingNotes.forEach(n => n.remove());
-
-    // Initialize gauge
     gauge = 0;
     updateGauge(0);
+
+    startBGM(currentSong.bpm);
+
+    const existingNotes = document.querySelectorAll('.note');
+    existingNotes.forEach(n => n.remove());
 
     requestAnimationFrame(update);
 }
@@ -225,31 +349,28 @@ function update(timestamp) {
 
     const currentTime = timestamp - startTime;
 
-    // spawn notes
     while (noteIndex < mapData.length && mapData[noteIndex].time - 1500 <= currentTime) {
         if (mapData[noteIndex].type === 'end') {
             if (notes.length === 0) {
                 endGame();
                 return;
             }
+        } else if (mapData[noteIndex].type === 'start_bgm') {
+            // Handled in startGame already
         } else {
             createNote(mapData[noteIndex]);
         }
         noteIndex++;
     }
 
-    // Move notes
     for (let i = notes.length - 1; i >= 0; i--) {
         const note = notes[i];
-
         const timeDiff = note.data.time - currentTime;
         const x = HIT_X + (timeDiff / 1000) * NOTE_SPEED;
 
-        // Offset by half note width (35px) to center visually
         note.element.style.transform = `translate(${x - 35}px, -50%)`;
         note.currentX = x;
 
-        // Miss check (時間ベースで正確に判定, goodWindow外に出たらミス)
         if (timeDiff < -200) {
             showJudgment('不可');
             combo = 0;
@@ -257,7 +378,7 @@ function update(timestamp) {
             note.element.remove();
             notes.splice(i, 1);
             stats.miss++;
-            updateGauge(-GAUGE_LOSS_MISS);
+            updateGauge(-currentGaugeConfig.miss);
         }
     }
 
@@ -283,49 +404,32 @@ function handleInput(key) {
     const type = keyMap[key];
     if (!type) return;
 
-    // Visual feedback
     const drumPart = drumParts[key];
     if (drumPart) {
         drumPart.classList.remove('active');
-        void drumPart.offsetWidth; // Force reflow
+        void drumPart.offsetWidth;
         drumPart.classList.add('active');
         setTimeout(() => drumPart.classList.remove('active'), 100);
     }
 
-    playSound(type);
-
-    // Hit detection - Time based
     const currentTime = performance.now() - startTime;
-
-    // Latency Compensation (ms)
-    // A negative value shifts the window earlier (compensating for audio/visual delay)
-    // "Feels late" -> hit needs to be earlier relative to music? Or note needs to be visual earlier?
-    // If "hit is center but counts as miss or late":
-    // Users often hit slightly late due to visual/audio travel time.
-    // We want to shift the "Target Time" to match user's perceived "Now".
-    // Or shift user's input time.
-    // Let's add an offset to the difference calculation.
-    // Latency Compensation (ms)
-    const LATENCY_OFFSET = 0;
-
-    // Hit windows (ms)
+    const LATENCY_OFFSET = -30;
     const perfectWindow = 100;
     const goodWindow = 200;
 
     let hitNoteIndex = -1;
+    let minTimeDiff = Infinity;
 
-    // Search for closest note
     for (let i = 0; i < notes.length; i++) {
         const note = notes[i];
         if (note.data.type !== type || note.hit) continue;
 
-        // Apply latency compensation to the difference
         const rawDiff = note.data.time - currentTime;
         const timeDiff = Math.abs(rawDiff + LATENCY_OFFSET);
 
-        if (timeDiff < goodWindow) {
+        if (timeDiff < goodWindow && timeDiff < minTimeDiff) {
+            minTimeDiff = timeDiff;
             hitNoteIndex = i;
-            break;
         }
     }
 
@@ -338,10 +442,9 @@ function handleInput(key) {
         note.element.remove();
         notes.splice(hitNoteIndex, 1);
 
-        // Trigger Hit Flash Animation
         const hitZoneCircle = hitZone.querySelector('.hit-circle');
         hitZoneCircle.classList.remove('hit-animation');
-        void hitZoneCircle.offsetWidth; // Force Reflow
+        void hitZoneCircle.offsetWidth;
         hitZoneCircle.classList.add('hit-animation');
 
         if (timeDiff < perfectWindow) {
@@ -349,13 +452,13 @@ function handleInput(key) {
             showJudgment('良');
             combo++;
             stats.perfect++;
-            updateGauge(GAUGE_GAIN_PERFECT);
+            updateGauge(currentGaugeConfig.perfect);
         } else {
             score += 500 + (combo * 5);
             showJudgment('可');
             combo++;
             stats.good++;
-            updateGauge(GAUGE_GAIN_GOOD);
+            updateGauge(currentGaugeConfig.good);
         }
         updateCombo();
         scoreEl.innerText = score.toLocaleString();
@@ -379,17 +482,23 @@ function updateGauge(amount) {
     if (gauge > MAX_GAUGE) gauge = MAX_GAUGE;
     if (gauge < 0) gauge = 0;
 
-    if (gaugeFillEl) {
-        gaugeFillEl.style.width = `${gauge}%`;
+    const activeCount = Math.floor(gauge / 5);
 
-        if (gauge === MAX_GAUGE) {
-            gaugeFillEl.className = 'gauge-fill max';
-        } else if (gauge >= CLEAR_THRESHOLD) {
-            gaugeFillEl.className = 'gauge-fill cleared';
+    gaugeSegments.forEach((segment, index) => {
+        if (index < activeCount) {
+            segment.classList.add('active');
+            if (gauge === MAX_GAUGE) {
+                segment.className = 'gauge-segment active max';
+            } else if (gauge >= CLEAR_THRESHOLD) {
+                segment.className = 'gauge-segment active cleared';
+            } else {
+                segment.className = 'gauge-segment active';
+            }
         } else {
-            gaugeFillEl.className = 'gauge-fill';
+            segment.classList.remove('active');
+            segment.className = 'gauge-segment';
         }
-    }
+    });
 }
 
 function showJudgment(text) {
@@ -397,7 +506,6 @@ function showJudgment(text) {
     judgmentDisplay.className = '';
     void judgmentDisplay.offsetWidth;
 
-    // Assign class based on text content for coloring
     if (text === '良') judgmentDisplay.className = 'judgment-perfect';
     else if (text === '可') judgmentDisplay.className = 'judgment-good';
     else if (text === '不可') judgmentDisplay.className = 'judgment-miss';
@@ -411,30 +519,49 @@ function endGame() {
     goodCountEl.innerText = stats.good;
     missCountEl.innerText = stats.miss;
 
-    // Add Clear Result to Game Over Screen
-    let resultTitle = document.querySelector('#game-over-screen h2');
-    if (gauge >= CLEAR_THRESHOLD) {
-        resultTitle.innerText = "クリア成功！";
-        resultTitle.style.color = "#ffeb3b";
-    } else {
-        resultTitle.innerText = "クリア失敗...";
-        resultTitle.style.color = "#888";
+    const clearStatusEl = document.getElementById('clear-status');
+    if (clearStatusEl) {
+        if (gauge >= CLEAR_THRESHOLD) {
+            clearStatusEl.innerText = "ノルマ達成！";
+            clearStatusEl.className = "clear-status-text status-clear";
+        } else {
+            clearStatusEl.innerText = "ノルマ未達成...";
+            clearStatusEl.className = "clear-status-text status-fail";
+        }
     }
 
     gameOverScreen.classList.remove('hidden');
 }
 
-// Event Listeners
-const mainStartBtn = document.getElementById('main-start-btn');
-if (mainStartBtn) {
-    mainStartBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        startGame('normal');
+function initSongList() {
+    songListContainer.innerHTML = '';
+    SONG_LIST.forEach(song => {
+        const card = document.createElement('div');
+        card.className = 'song-card';
+        card.innerHTML = `
+            <span class="song-name">${song.name}</span>
+            <span class="song-bpm">BPM: ${song.bpm}</span>
+        `;
+        card.onclick = () => selectSong(song);
+        songListContainer.appendChild(card);
     });
 }
 
+function selectSong(song) {
+    currentSong = song;
+    songSelection.classList.add('hidden');
+    difficultySelection.classList.remove('hidden');
+}
+
+backToSongsBtn.onclick = () => {
+    difficultySelection.classList.add('hidden');
+    songSelection.classList.remove('hidden');
+};
+
+initSongList();
+
 window.addEventListener('keydown', (e) => {
-    if (e.repeat) return; // キー長押しによる連続入力（意図しない多重判定）を防止
+    if (e.repeat) return;
     if (e.key === ' ' && !isGameActive && !startScreen.classList.contains('hidden')) {
         startGame('normal');
         return;
@@ -444,7 +571,6 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Difficulty Selection
 document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         e.stopPropagation();

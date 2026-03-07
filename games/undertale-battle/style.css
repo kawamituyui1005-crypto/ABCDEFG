@@ -197,14 +197,54 @@ body {
 /* HP表示枠 */
 #hp-display {
     width: 100%;
-    text-align: left;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    font-family: 'DotGothic16', monospace;
     font-size: 24px;
-    color: red;
+    color: white;
+}
+
+.player-name {
+    font-size: 28px;
+    margin-right: 15px;
+}
+
+.player-lv {
+    font-size: 28px;
+    margin-right: 25px;
+}
+
+.hp-label {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    margin-right: 10px;
+    transform: translateY(2px);
+}
+
+#hp-bar-container {
+    width: 60px;
+    height: 25px;
+    background-color: red;
+    margin-right: 15px;
+    position: relative;
+}
+
+#hp-bar-fill {
+    width: 100%;
+    height: 100%;
+    background-color: yellow;
 }
 
 #hp-text {
-    margin-left: 10px;
+    font-family: 'VT323', monospace;
+    font-size: 24px;
+}
+
+#score-text {
+    margin-left: auto;
+    font-family: 'VT323', monospace;
+    font-size: 24px;
 }
 
 /* 装飾用UIボタン */

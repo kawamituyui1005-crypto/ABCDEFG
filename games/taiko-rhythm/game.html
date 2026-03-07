@@ -11,6 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Zen+Kaku+Gothic+New:wght@700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="songs.js" defer></script>
     <script src="script.js" defer></script>
 </head>
 
@@ -32,14 +33,34 @@
                         <div class="hit-circle"></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Soul Gauge -->
-                <div class="gauge-container">
-                    <div class="gauge-label">魂</div>
-                    <div class="gauge-track">
-                        <div class="gauge-fill" id="gauge-fill"></div>
-                        <div class="gauge-threshold-marker"></div>
-                    </div>
+            <!-- Soul Gauge - Moved outside lane-container -->
+            <!-- Soul Gauge - Rectangle with 10 segments -->
+            <div class="gauge-container">
+                <div class="gauge-label">魂</div>
+                <div class="gauge-track" id="gauge-track">
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-segment"></div>
+                    <div class="gauge-threshold-marker"></div>
                 </div>
             </div>
 
@@ -69,13 +90,23 @@
 
         <div id="start-screen" class="overlay active">
             <h2>TAIKO RHYTHM</h2>
-            <p class="subtitle">Select Difficulty</p>
 
-            <div class="difficulty-select">
-                <button class="diff-btn easy" data-diff="easy">かんたん</button>
-                <button class="diff-btn normal" data-diff="normal">ふつう</button>
-                <button class="diff-btn hard" data-diff="hard">むずかしい</button>
-                <button class="diff-btn oni" data-diff="oni">おに</button>
+            <div id="song-selection">
+                <p class="subtitle">Select Song</p>
+                <div class="song-list" id="song-list-container">
+                    <!-- JavaScriptで動的に生成 -->
+                </div>
+            </div>
+
+            <div id="difficulty-selection" class="hidden">
+                <p class="subtitle">Select Difficulty</p>
+                <div class="difficulty-select">
+                    <button class="diff-btn easy" data-diff="easy">かんたん</button>
+                    <button class="diff-btn normal" data-diff="normal">ふつう</button>
+                    <button class="diff-btn hard" data-diff="hard">むずかしい</button>
+                    <button class="diff-btn oni" data-diff="oni">おに</button>
+                </div>
+                <button id="back-to-songs" class="text-btn">← Back to Songs</button>
             </div>
 
             <div class="instructions">
@@ -89,6 +120,7 @@
 
         <div id="game-over-screen" class="overlay hidden">
             <h2>RESULT</h2>
+            <div id="clear-status" class="clear-status-text"></div>
             <div class="result-score">
                 <span class="result-label">Score</span>
                 <span id="final-score">0</span>
