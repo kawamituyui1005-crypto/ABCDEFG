@@ -1,0 +1,756 @@
+:root {
+    --bg-color: #111;
+    --lane-color: #333;
+    --don-color: #ff3333;
+    /* Red */
+    --ka-color: #33ccff;
+    /* Blue */
+    --hit-zone-border: #fff;
+    --text-color: #fff;
+    --neon-glow: 0 0 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Outfit', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../../images/matsuri-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 1000px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.game-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.back-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.game-title {
+    font-size: 2rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.score-display {
+    font-size: 1.5rem;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+}
+
+.game-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#lane-container {
+    height: 120px;
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    /* Reduced margin to fit gauge */
+}
+
+/* Soul Gauge */
+.gauge-container {
+    position: fixed;
+    top: 80px;
+    /* Fixed position below header */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.gauge-label {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    background: #f00;
+    padding: 2px 8px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px #f00;
+}
+
+.gauge-track {
+    flex: 1;
+    height: 24px;
+    background: #222;
+    border: 2px solid #555;
+    border-radius: 4px;
+    /* Sharper corners for rectangle */
+    position: relative;
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    overflow: visible;
+}
+
+.gauge-segment {
+    flex: 1;
+    height: 100%;
+    background: #333;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gauge-segment.active {
+    background: linear-gradient(to bottom, #ffea00, #ff9500);
+    box-shadow: 0 0 8px rgba(255, 200, 0, 0.6);
+}
+
+.gauge-segment.cleared.active {
+    background: linear-gradient(to bottom, #fff700, #ff3300);
+    box-shadow: 0 0 12px rgba(255, 50, 0, 0.8);
+}
+
+.gauge-segment.max.active {
+    background: linear-gradient(to bottom, #ff00ff, #00ffff);
+    animation: rainbow 1s linear infinite;
+}
+
+.gauge-threshold-marker {
+    position: absolute;
+    top: -5px;
+    bottom: -5px;
+    left: 80%;
+    /* 8th segment boundary */
+    width: 3px;
+    background: #fff;
+    box-shadow: 0 0 10px #fff;
+    z-index: 5;
+}
+
+@keyframes rainbow {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}
+
+#hit-zone {
+    position: absolute;
+    left: 100px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 90px;
+    height: 90px;
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    z-index: 5;
+}
+
+.hit-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.hit-animation {
+    animation: hitFlash 0.1s ease-out;
+}
+
+@keyframes hitFlash {
+    0% {
+        box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.5);
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+.note {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    z-index: 4;
+    transition: transform 0.05s linear;
+}
+
+.note.don {
+    background-color: var(--don-color);
+    box-shadow: 0 0 15px var(--don-color);
+}
+
+.note.ka {
+    background-color: var(--ka-color);
+    box-shadow: 0 0 15px var(--ka-color);
+}
+
+#drum-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.drum-container {
+    width: 280px;
+    height: 280px;
+    position: relative;
+    border-radius: 50%;
+    /* 木の枠を表現 */
+    background: #e6b88a;
+    border: 20px solid #8b5a2b;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* 中央の文字 */
+.drum-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.drum-part {
+    position: absolute;
+    transition: background-color 0.1s, box-shadow 0.1s;
+}
+
+/* ふち（Ka）: コンテナ全体の左右半分 */
+.drum-part.ka {
+    width: 50%;
+    height: 100%;
+    top: 0;
+    background: transparent;
+    z-index: 1;
+}
+
+.drum-part.ka.left {
+    left: 0;
+}
+
+.drum-part.ka.right {
+    right: 0;
+}
+
+/* 面（Don）: 内側の円の左右半分 */
+.drum-part.don {
+    width: 35%;
+    height: 70%;
+    top: 15%;
+    background: #fdf5e6;
+    /* 面の色（オフホワイト/ベージュ） */
+    z-index: 5;
+}
+
+.drum-part.don.left {
+    left: 15%;
+    border-radius: 100px 0 0 100px;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.drum-part.don.right {
+    right: 15%;
+    border-radius: 0 100px 100px 0;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Active states for drum animation */
+.drum-part.don.active {
+    background: var(--don-color);
+    box-shadow: 0 0 20px var(--don-color);
+}
+
+.drum-part.ka.active {
+    background: var(--ka-color);
+    box-shadow: 0 0 20px var(--ka-color);
+}
+
+.controls-guide {
+    display: none;
+    /* スマホ版ではキーボードガイドを非表示 */
+}
+
+.key-guide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.key {
+    display: inline-block;
+    padding: 5px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    font-weight: 800;
+}
+
+/* スマホ特有の余計な動作を防ぐ */
+body {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+}
+
+#combo-display {
+    position: absolute;
+    top: 40px;
+    /* Above lane */
+    left: 90px;
+    /* Aligned with hit zone */
+    text-align: center;
+    pointer-events: none;
+}
+
+#combo-display.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s;
+}
+
+#combo-count {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffeb3b;
+    text-shadow: 0 0 10px #ffeb3b;
+    line-height: 1;
+}
+
+.combo-label {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #ffeb3b;
+}
+
+#judgment-display {
+    position: absolute;
+    top: 130px;
+    /* Below lane */
+    left: 145px;
+    /* Center of hit zone */
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+    font-weight: 800;
+    height: 30px;
+    pointer-events: none;
+}
+
+.judgment-perfect {
+    color: #fe0;
+    text-shadow: 0 0 10px #fe0;
+    animation: pop 0.2s;
+}
+
+.judgment-good {
+    color: #fff;
+    text-shadow: 0 0 10px #fff;
+    animation: pop 0.2s;
+}
+
+.judgment-miss {
+    color: #888;
+    animation: shake 0.2s;
+}
+
+@keyframes pop {
+    0% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateX(-50%) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateX(0);
+    }
+
+    25% {
+        transform: translateX(-50%) translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(-50%) translateX(5px);
+    }
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s;
+}
+
+.overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay h2 {
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    margin-bottom: 20px;
+}
+
+.instructions {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.instruction-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+.note-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid #fff;
+}
+
+.note-icon.red {
+    background: var(--don-color);
+}
+
+.note-icon.blue {
+    background: var(--ka-color);
+}
+
+button {
+    margin-top: 30px;
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: transparent;
+    border: 2px solid var(--don-color);
+    color: var(--don-color);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background: var(--don-color);
+    color: #fff;
+    box-shadow: 0 0 20px var(--don-color);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.main-start-btn {
+    padding: 20px 60px;
+    font-size: 2rem;
+    background: #FF0000;
+    color: #fff;
+    border: 4px solid #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 20px #FF0000;
+    animation: pulse 1s infinite;
+    margin-bottom: 10px;
+}
+
+.main-start-btn:hover {
+    background: #fff;
+    color: #FF0000;
+    transform: scale(1.1);
+}
+
+.difficulty-select {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 30px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.diff-btn {
+    padding: 10px 20px;
+    margin-top: 0;
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    background: transparent;
+    transition: all 0.2s;
+    min-width: 80px;
+}
+
+.diff-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px currentColor;
+    background: currentColor;
+    color: #000;
+    border-color: transparent;
+}
+
+.diff-btn.easy {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.diff-btn.normal {
+    color: #8BC34A;
+    border-color: #8BC34A;
+}
+
+/* Actually standard Taiko normal is usually Greenish/Bamboo */
+.diff-btn.hard {
+    color: #FF9800;
+    border-color: #FF9800;
+}
+
+/* Pine/Bamboo/Cherry Blossom colors usually used, sticking to generic difficulty colors for clarity */
+/* Standard Taiko: Easy(Flower-Pink), Normal(Bamboo-Green), Hard(Tree-Brown/Orange), Oni(Demon-Purple/Pink) */
+.diff-btn.easy {
+    color: #ff69b4;
+    border-color: #ff69b4;
+}
+
+/* Kantan - Pink */
+.diff-btn.normal {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+/* Futsuu - Green */
+.diff-btn.hard {
+    color: #FF5722;
+    border-color: #FF5722;
+}
+
+/* Muzukashii - Orange/Red */
+/* クリア判定テキスト */
+.clear-status-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.status-clear {
+    color: #ff3333;
+    /* 赤（達成） */
+}
+
+.status-fail {
+    color: #33ccff;
+    /* 青（失敗） */
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.diff-btn.oni {
+    color: #E040FB;
+    border-color: #E040FB;
+}
+
+/* Song Selection Styles */
+.song-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 10px;
+    /* スクロールバー用の余白 */
+}
+
+/* スクロールバーのカスタマイズ (WebKit用) */
+.song-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.song-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.song-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.song-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.song-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.song-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    border-color: #ffeb3b;
+}
+
+.song-card.selected {
+    border-color: #ffeb3b;
+    background: rgba(255, 235, 59, 0.15);
+    box-shadow: 0 0 15px rgba(255, 235, 59, 0.3);
+}
+
+.song-name {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.song-bpm {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    padding: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.text-btn:hover {
+    color: #fff;
+    background: none;
+    box-shadow: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Oni - Purple */
+
+.result-score {
+    font-size: 3rem;
+    margin: 20px 0;
+    color: #ffeb3b;
+}
+
+.result-detail {
+    text-align: left;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+}
