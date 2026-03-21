@@ -69,7 +69,9 @@ let stats = {
 
 // 楽曲データは songs.js に移行されました。
 let currentSong = SONG_LIST[0];
-let bgmIntervalId = null;
+let melodyTimeoutId = null;
+let drumTimeoutId = null;
+let bassTimeoutId = null;
 
 // Map Data
 let mapData = [];
@@ -155,6 +157,12 @@ function stopBGM() {
         activeAudio.pause();
         activeAudio.currentTime = 0;
     }
+    if (melodyTimeoutId) clearTimeout(melodyTimeoutId);
+    if (drumTimeoutId) clearTimeout(drumTimeoutId);
+    if (bassTimeoutId) clearTimeout(bassTimeoutId);
+    melodyTimeoutId = null;
+    drumTimeoutId = null;
+    bassTimeoutId = null;
 }
 
 function startBGM(bpm) {
@@ -170,11 +178,23 @@ function startBGM(bpm) {
             activeAudio.currentTime = 0;
         }
         activeAudio.loop = true;
-        activeAudio.play().catch(e => console.log("Audio play failed, fallback to beep:", e));
+        activeAudio.play()
+            .then(() => {
+                console.log("Audio playing:", currentSong.audioUrl);
+            })
+            .catch(e => {
+                console.log("Audio play failed, fallback to synth:", e);
+                startSynthesizedBGM(bpm);
+            });
         return;
     }
 
-    // 設定されていない場合は、従来のピコピコBGMを再生
+    startSynthesizedBGM(bpm);
+}
+
+function startSynthesizedBGM(bpm) {
+    if (!isBGMPlaying) return;
+
     const beatSec = 60 / bpm;
     const melodyKey = currentSong.basePattern;
     const melodyNotes = BGM_MELODIES[melodyKey] || BGM_MELODIES.matsuri;
@@ -183,38 +203,42 @@ function startBGM(bpm) {
     let currentBeatTime = audioCtx.currentTime + 0.1;
 
     function scheduleMelody() {
-        if (!isGameActive || !isBGMPlaying || currentSong.audioUrl) return;
+        if (!isGameActive || !isBGMPlaying) return;
         while (currentBeatTime < audioCtx.currentTime + 0.5) {
-            const [freq, durBeats] = melodyNotes[idx % melodyNotes.length];
+            const entry = melodyNotes[idx % melodyNotes.length];
+            if (!entry) break;
+            const [freq, durBeats] = entry;
             const durSec = durBeats * beatSec;
-            playMelodyNote(freq, currentBeatTime, durSec * 0.8);
+            if (freq > 0) {
+                playMelodyNote(freq, currentBeatTime, durSec * 0.8);
+            }
             currentBeatTime += durSec;
             idx++;
         }
-        setTimeout(scheduleMelody, 150);
+        melodyTimeoutId = setTimeout(scheduleMelody, 150);
     }
 
     let drumTime = audioCtx.currentTime + 0.1;
     function scheduleDrum() {
-        if (!isGameActive || !isBGMPlaying || currentSong.audioUrl) return;
+        if (!isGameActive || !isBGMPlaying) return;
         while (drumTime < audioCtx.currentTime + 0.5) {
             const beat = Math.round((drumTime - audioCtx.currentTime) / beatSec) % 4;
             createBgmDrum('low', drumTime);
             if (beat % 2 === 1) createBgmDrum('high', drumTime + beatSec * 0.5);
             drumTime += beatSec;
         }
-        setTimeout(scheduleDrum, 150);
+        drumTimeoutId = setTimeout(scheduleDrum, 150);
     }
 
     let bassTime = audioCtx.currentTime + 0.1;
     function scheduleBass() {
-        if (!isGameActive || !isBGMPlaying || currentSong.audioUrl) return;
+        if (!isGameActive || !isBGMPlaying) return;
         while (bassTime < audioCtx.currentTime + 0.5) {
             const bassFreq = 110;
             playBassNote(bassFreq, bassTime, beatSec * 0.7);
             bassTime += beatSec * 2;
         }
-        setTimeout(scheduleBass, 150);
+        bassTimeoutId = setTimeout(scheduleBass, 150);
     }
 
     scheduleMelody();
