@@ -9,9 +9,11 @@ const clearScreen = document.getElementById('game-clear');
 const scoreText = document.getElementById('score-text');
 const finalScoreText = document.getElementById('final-score');
 const clearRestartBtn = document.getElementById('clear-restart-btn');
+const enemySprite = document.getElementById('enemy-sprite');
 
 let isGameActive = false;
-let playerPos = { x: 125, y: 125 }; // 箱の中心に配置
+let isIntroActive = false;
+let playerPos = { x: 200, y: 200 }; // 400x400のボックスの中心
 let playerSpeed = 3;
 let keys = {};
 let bullets = [];
@@ -27,6 +29,11 @@ const MAX_HP = 20;
 let isInvincible = false;
 let invincibilityFrames = 0;
 
+// アイテム管理用
+let items = [];
+let playerBaseSpeed = 3;
+let speedBoostTimer = 0;
+
 // 難易度設定
 let currentDifficulty = 'normal';
 const difficultySettings = {
@@ -36,6 +43,16 @@ const difficultySettings = {
 };
 
 let currentAttackPattern = 0;
+
+// ストーリーデータ
+const storyData = [
+    "* おや・・・？",
+    "* 迷い込んできたのかい？",
+    "* ここは 君のような者が 来る場所じゃない。",
+    "* ボクの 名前は「ゴースト」。",
+    "* 君の「ケツイ」を見せてもらうよ！"
+];
+let storyIndex = 0;
 
 function updateHPUI() {
     const hpBarFill = document.getElementById('hp-bar-fill');
@@ -114,20 +131,50 @@ function initEvent() {
     document.querySelectorAll('.diff-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             currentDifficulty = e.target.dataset.level;
-            startGame();
+            startIntro(); // 直接 startGame ではなく Intro を開始
         });
+    });
+
+    // 会話を進めるためのクリックイベント
+    window.addEventListener('mousedown', () => {
+        if (isIntroActive) showNextDialogue();
     });
 
     // 初期メッセージ
     dialogText.innerHTML = "* あなたの 前に 新たな敵が 現れた。<br>* 十字キーかWASDで ハートを動かせ！";
 }
 
+function startIntro() {
+    isIntroActive = true;
+    isGameActive = false;
+    storyIndex = 0;
+
+    startScreen.classList.add('hidden');
+    enemySprite.classList.remove('hidden');
+    battleBox.classList.add('hidden'); // 会話中はボックスを隠す
+
+    showNextDialogue();
+}
+
+function showNextDialogue() {
+    if (storyIndex < storyData.length) {
+        dialogText.innerText = storyData[storyIndex];
+        storyIndex++;
+    } else {
+        isIntroActive = false;
+        startGame();
+    }
+}
+
 function startGame() {
     isGameActive = true;
-    playerPos = { x: 125, y: 125 };
+    isIntroActive = false;
+    playerPos = { x: 200, y: 200 };
 
     gameOverScreen.classList.add('hidden');
     startScreen.classList.add('hidden');
+    enemySprite.classList.remove('hidden');
+    battleBox.classList.remove('hidden');
 
     playerHP = MAX_HP;
     isInvincible = false;
@@ -141,9 +188,14 @@ function startGame() {
 
     updateHPUI();
 
-    // 古い弾をすべて消す
+    // 古い弾とアイテムをすべて消す
     bullets.forEach(b => b.element.remove());
     bullets = [];
+    items.forEach(item => item.element.remove());
+    items = [];
+
+    playerSpeed = playerBaseSpeed;
+    speedBoostTimer = 0;
 
     frameCount = 0;
     currentAttackPattern = 0;
@@ -195,16 +247,19 @@ function spawnBoneAttack() {
     if (isVertical) {
         if (Math.random() > 0.5) {
             let isRight = Math.random() > 0.5;
-            let x = isRight ? 270 : -20;
+            let x = isRight ? 420 : -20;
             let vx = isRight ? -speed : speed;
-            createBullet('bone_v', { x: x, y: 236, vx: vx, vy: 0 }); // 床を這う骨
+            createBullet('bone_v', { x: x, y: 386, vx: vx, vy: 0 }); // 床を這う骨
         } else {
-            let x = Math.random() * 230 + 10;
-            createBullet('bone_v', { x: x, y: 270, vx: 0, vy: -speed });
+            let x = Math.random() * 380 + 10;
+            createBullet('bone_v', { x: x, y: 420, vx: 0, vy: -speed });
         }
     } else {
-        let y = Math.random() * 230 + 10;
-        createBullet('bone_h', { x: 270, y: y, vx: -speed, vy: 0 });
+        let x = Math.random() * 380 + 10;
+        let isTop = Math.random() > 0.5;
+        let y = isTop ? -20 : 420;
+        let vy = isTop ? speed : -speed;
+        createBullet('bone_h', { x: x, y: y, vx: 0, vy: vy });
     }
 }
 
@@ -212,10 +267,86 @@ function spawnHomingBullet() {
     const settings = difficultySettings[currentDifficulty];
     if (!settings.hasHoming) return;
 
-    const x = Math.random() * 250;
+    const x = Math.random() * 400;
     const y = -10;
     const speed = 2 * settings.bulletSpeedMult;
     createBullet('homing', { x, y, vx: 0, vy: 1, speed: speed });
+}
+
+function spawnRectAttack() {
+    const settings = difficultySettings[currentDifficulty];
+    const speed = 2 * settings.bulletSpeedMult;
+    const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+    let x, y, vx, vy, w, h;
+
+    if (side === 0) { // top
+        x = Math.random() * 360 + 20; y = -40; vx = 0; vy = speed; w = 40; h = 80;
+    } else if (side === 1) { // right
+        x = 440; y = Math.random() * 360 + 20; vx = -speed; vy = 0; w = 80; h = 40;
+    } else if (side === 2) { // bottom
+        x = Math.random() * 360 + 20; y = 440; vx = 0; vy = -speed; w = 40; h = 80;
+    } else { // left
+        x = -40; y = Math.random() * 360 + 20; vx = speed; vy = 0; w = 80; h = 40;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'bullet bullet-rect';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    battleBox.appendChild(el);
+
+    bullets.push({ type: 'rect', element: el, x, y, vx, vy, width: w, height: h });
+}
+
+function spawnItem() {
+    // 回復が必要な時ほど出やすくする
+    const hpRatio = playerHP / MAX_HP;
+    const spawnChance = 0.005 + (1 - hpRatio) * 0.01;
+    if (Math.random() > spawnChance) return;
+
+    const type = Math.random() > 0.3 ? 'heal' : 'speed';
+    const x = Math.random() * 360 + 20;
+    const y = Math.random() * 360 + 20;
+
+    const el = document.createElement('div');
+    el.className = `item item-${type}`;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    battleBox.appendChild(el);
+
+    items.push({ type, element: el, x, y, life: 300 }); // 5秒で消える
+}
+
+function updateItems() {
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.life--;
+
+        // 当たり判定
+        const dx = item.x - playerPos.x;
+        const dy = item.y - playerPos.y;
+        if (Math.sqrt(dx * dx + dy * dy) < 15) {
+            if (item.type === 'heal') {
+                playerHP = Math.min(MAX_HP, playerHP + 4);
+                updateHPUI();
+                dialogText.innerText = "* HPが 回復した！";
+            } else if (item.type === 'speed') {
+                playerSpeed = playerBaseSpeed * 1.5;
+                speedBoostTimer = 180; // 3秒間
+                dialogText.innerText = "* スピードが 上がった！";
+            }
+            item.element.remove();
+            items.splice(i, 1);
+            continue;
+        }
+
+        if (item.life <= 0) {
+            item.element.remove();
+            items.splice(i, 1);
+        }
+    }
 }
 
 // ====== ゲーム全体更新 ======
@@ -226,11 +357,11 @@ function updatePlayer() {
     if (keys['ArrowLeft'] || keys['a'] || keys['A']) playerPos.x -= playerSpeed;
     if (keys['ArrowRight'] || keys['d'] || keys['D']) playerPos.x += playerSpeed;
 
-    // Bounds check (box is 250x250, player is 16x16)
+    // Bounds check (box is 400x400, player is 16x16)
     if (playerPos.x < 8) playerPos.x = 8;
     if (playerPos.y < 8) playerPos.y = 8;
-    if (playerPos.x > 242) playerPos.x = 242;
-    if (playerPos.y > 242) playerPos.y = 242;
+    if (playerPos.x > 392) playerPos.x = 392;
+    if (playerPos.y > 392) playerPos.y = 392;
 
     player.style.left = playerPos.x + 'px';
     player.style.top = playerPos.y + 'px';
@@ -249,6 +380,16 @@ function updatePlayer() {
             player.style.opacity = '1';
         }
     }
+
+    // スピードアップのタイマー管理
+    if (speedBoostTimer > 0) {
+        speedBoostTimer--;
+        player.style.boxShadow = '0 0 10px #00ffff'; // スピードアップ中のエフェクト
+        if (speedBoostTimer <= 0) {
+            playerSpeed = playerBaseSpeed;
+            player.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.8)';
+        }
+    }
 }
 
 function updateBullets() {
@@ -261,9 +402,9 @@ function updateBullets() {
             if (b.life > 0) {
                 let hit = false;
                 if (b.isVertical) {
-                    if (Math.abs(playerPos.x - b.x) < 20) hit = true;
+                    if (Math.abs(playerPos.x - b.x) < 40) hit = true;
                 } else {
-                    if (Math.abs(playerPos.y - b.y) < 20) hit = true;
+                    if (Math.abs(playerPos.y - b.y) < 40) hit = true;
                 }
                 if (hit) hitPlayer();
             } else {
@@ -304,6 +445,8 @@ function updateBullets() {
             const dx = b.x - playerPos.x;
             const dy = b.y - playerPos.y;
             if (Math.sqrt(dx * dx + dy * dy) < 10) hit = true;
+        } else if (b.type === 'rect') {
+            if (Math.abs(playerPos.x - b.x) < b.width / 2 + 4 && Math.abs(playerPos.y - b.y) < b.height / 2 + 4) hit = true;
         } else {
             const dx = b.x - playerPos.x;
             const dy = b.y - playerPos.y;
@@ -313,7 +456,7 @@ function updateBullets() {
         if (hit) hitPlayer();
 
         // 削除判定
-        if (b.x < -30 || b.x > 280 || b.y < -30 || b.y > 280) {
+        if (b.x < -100 || b.x > 500 || b.y < -100 || b.y > 500) {
             b.element.remove();
             bullets.splice(i, 1);
         }
@@ -325,6 +468,8 @@ function gameLoop(time) {
 
     updatePlayer();
     updateBullets();
+    updateItems();
+    spawnItem();
 
     // スコア加算
     score += 10;
@@ -340,7 +485,7 @@ function gameLoop(time) {
 
     // パターンの切り替え
     if (frameCount % 600 === 0) {
-        currentAttackPattern = (currentAttackPattern + 1) % 5;
+        currentAttackPattern = (currentAttackPattern + 1) % 6;
     }
 
     if (currentAttackPattern === 4) {
@@ -360,12 +505,12 @@ function gameLoop(time) {
 
             if (isVertical) {
                 warningEl.style.width = '2px';
-                warningEl.style.height = '250px';
+                warningEl.style.height = '400px';
                 warningEl.style.left = targetPos + 'px';
                 warningEl.style.top = '0px';
                 warningEl.style.transform = 'translate(-50%, 0)';
             } else {
-                warningEl.style.width = '250px';
+                warningEl.style.width = '400px';
                 warningEl.style.height = '2px';
                 warningEl.style.left = '0px';
                 warningEl.style.top = targetPos + 'px';
@@ -381,8 +526,8 @@ function gameLoop(time) {
                 warningEl.style.backgroundColor = '#ffffff';
                 warningEl.style.boxShadow = '0 0 10px #ff0000, 0 0 20px #ff0000';
 
-                if (isVertical) { warningEl.style.width = '40px'; }
-                else { warningEl.style.height = '40px'; }
+                if (isVertical) { warningEl.style.width = '80px'; }
+                else { warningEl.style.height = '80px'; }
 
                 bullets.push({
                     type: 'laser',
@@ -416,6 +561,10 @@ function gameLoop(time) {
         if (frameCount % 600 === 0) dialogText.innerText = "* 敵の ケツイが みなぎっている！\n* 猛攻を しのげ！";
         if (frameCount % Math.floor(40 * settings.spawnRateMult) === 0) spawnHomingBullet();
         if (frameCount % Math.floor(15 * settings.spawnRateMult) === 0) spawnBoneAttack();
+    } else if (currentAttackPattern === 5) {
+        if (frameCount % 600 === 0) dialogText.innerText = "* 枠の外から 強力な攻撃が！\n* 四方八方に 注意しろ！";
+        if (frameCount % Math.floor(45 * settings.spawnRateMult) === 0) spawnRectAttack();
+        if (frameCount % Math.floor(80 * settings.spawnRateMult) === 0) spawnBoneAttack();
     }
 
     frameId = requestAnimationFrame(gameLoop);
@@ -425,6 +574,7 @@ function gameOver() {
     isGameActive = false;
     cancelAnimationFrame(frameId);
     gameOverScreen.classList.remove('hidden');
+    enemySprite.classList.add('hidden');
 
     // BGM停止
     if (typeof stopBGM === 'function') {
@@ -437,6 +587,7 @@ function gameClear() {
     cancelAnimationFrame(frameId);
     if (finalScoreText) finalScoreText.innerText = score;
     clearScreen.classList.remove('hidden');
+    enemySprite.classList.add('hidden');
 
     // BGM停止
     if (typeof stopBGM === 'function') {
